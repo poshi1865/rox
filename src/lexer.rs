@@ -77,7 +77,7 @@ struct Lexer {
     chars: Vec<char>,
     pointer: usize,
     current_line: usize,
-    keyword_list: Vec<String>
+    keyword_list: Vec<String>,
 }
 
 impl Iterator for Lexer {
@@ -180,8 +180,7 @@ impl Iterator for Lexer {
                                     line: line,
                                 });
                                 self.pointer += 2;
-                            }
-                            else {
+                            } else {
                                 next_token = Some(Token {
                                     token_type: TokenType::Equal,
                                     lexeme: "=".to_string(),
@@ -189,7 +188,7 @@ impl Iterator for Lexer {
                                 });
                                 self.pointer += 1;
                             }
-                        },
+                        }
                         '<' => {
                             if self.peek_one_char() == '=' {
                                 next_token = Some(Token {
@@ -198,8 +197,7 @@ impl Iterator for Lexer {
                                     line: line,
                                 });
                                 self.pointer += 2;
-                            }
-                            else {
+                            } else {
                                 next_token = Some(Token {
                                     token_type: TokenType::Less,
                                     lexeme: "<".to_string(),
@@ -207,7 +205,7 @@ impl Iterator for Lexer {
                                 });
                                 self.pointer += 1;
                             }
-                        },
+                        }
                         '>' => {
                             if self.peek_one_char() == '=' {
                                 next_token = Some(Token {
@@ -216,8 +214,7 @@ impl Iterator for Lexer {
                                     line: line,
                                 });
                                 self.pointer += 2;
-                            }
-                            else {
+                            } else {
                                 next_token = Some(Token {
                                     token_type: TokenType::Greater,
                                     lexeme: ">".to_string(),
@@ -225,33 +222,32 @@ impl Iterator for Lexer {
                                 });
                                 self.pointer += 1;
                             }
-                        },
+                        }
                         '!' => {
-                            if self.peek_one_char() == '='{
+                            if self.peek_one_char() == '=' {
                                 next_token = Some(Token {
                                     token_type: TokenType::BangEqual,
                                     lexeme: "!=".to_string(),
-                                    line: line
+                                    line: line,
                                 });
                                 self.pointer += 2;
-                            }
-                            else {
+                            } else {
                                 next_token = Some(Token {
                                     token_type: TokenType::Bang,
                                     lexeme: lexeme,
-                                    line: line
+                                    line: line,
                                 });
                                 self.pointer += 1;
                             }
-                        },
+                        }
                         '/' => {
                             next_token = Some(Token {
                                 token_type: TokenType::Slash,
                                 lexeme: lexeme,
-                                line: line
+                                line: line,
                             });
                             self.pointer += 1;
-                        },
+                        }
                         '"' => {
                             self.pointer += 1;
                             let mut string_lexeme = String::from("\"");
@@ -266,18 +262,17 @@ impl Iterator for Lexer {
                                         }
                                         self.pointer += 1;
                                         current_char = self.chars.get(self.pointer);
-                                    },
-                                    None => return None
+                                    }
+                                    None => return None,
                                 }
-
                             }
                             next_token = Some(Token {
                                 token_type: TokenType::String,
                                 lexeme: string_lexeme,
-                                line: line
+                                line: line,
                             });
                             self.pointer += 1;
-                        },
+                        }
                         ' ' | '\t' => {
                             self.pointer += 1;
                             //  We generate a token here because the iterator otherwise returns
@@ -285,16 +280,16 @@ impl Iterator for Lexer {
                             next_token = Some(Token {
                                 token_type: TokenType::Whitespace,
                                 lexeme: lexeme,
-                                line: line
+                                line: line,
                             });
-                        },
+                        }
                         '\n' => {
                             self.current_line += 1;
                             self.pointer += 1;
                             next_token = Some(Token {
                                 token_type: TokenType::Whitespace,
                                 lexeme: lexeme,
-                                line: line
+                                line: line,
                             });
                         }
                         other => {
@@ -310,8 +305,8 @@ impl Iterator for Lexer {
                                         self.pointer += 1;
                                         word.push(c.clone());
                                         current_char = self.chars.get(self.pointer);
-                                    },
-                                    None => return None
+                                    }
+                                    None => return None,
                                 }
                             }
 
@@ -319,24 +314,22 @@ impl Iterator for Lexer {
                                 next_token = Some(Token {
                                     token_type: TokenType::Number,
                                     lexeme: word,
-                                    line: line
+                                    line: line,
                                 });
-                            }
-                            else if self.keyword_list.contains(&word) {
+                            } else if self.keyword_list.contains(&word) {
                                 next_token = Some(Token {
                                     token_type: TokenType::Keyword,
                                     lexeme: word,
-                                    line: line
+                                    line: line,
                                 });
-                            }
-                            else {
+                            } else {
                                 next_token = Some(Token {
                                     token_type: TokenType::Identifier,
                                     lexeme: word,
-                                    line: line
+                                    line: line,
                                 });
                             }
-                        },
+                        }
                     }
                 }
                 None => return None,
@@ -365,13 +358,29 @@ impl Lexer {
             chars: chars,
             pointer: 0,
             current_line: 0,
-            keyword_list: vec!["and".to_string(), "class".to_string(), "else".to_string(), "false".to_string(), "for".to_string(), "fun".to_string(), "if".to_string(), "nil".to_string(), "or".to_string(), "return".to_string(), "super".to_string(), "this".to_string(), "true".to_string(), "var".to_string(), "while".to_string()]
+            keyword_list: vec![
+                "and".to_string(),
+                "class".to_string(),
+                "else".to_string(),
+                "false".to_string(),
+                "for".to_string(),
+                "fun".to_string(),
+                "if".to_string(),
+                "nil".to_string(),
+                "or".to_string(),
+                "return".to_string(),
+                "super".to_string(),
+                "this".to_string(),
+                "true".to_string(),
+                "var".to_string(),
+                "while".to_string(),
+            ],
         })
     }
 
     // This is actually small enough to not be a function anymore
     fn peek_one_char(&self) -> char {
-        // Peeks the next char. 
+        // Peeks the next char.
         // TODO: self.chars[p] can go out of bounds and panic. Handle cleanly.
         return self.chars[self.pointer + 1];
     }
