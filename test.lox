@@ -1,3 +1,16 @@
-This is a lox test
-))
-((+=))
+andy formless fo _ _123 _abc ab123
+abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_
+and class else false for fun if nil or return super this true var while
+123
+123.456
+.456
+123.
+(){};,+-*!===<=>=!=<>/.
+""
+"string"
+space    tabs				newlines
+
+
+
+
+end
