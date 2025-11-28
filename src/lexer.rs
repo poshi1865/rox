@@ -429,6 +429,7 @@ impl Lexer {
                 "true".to_string(),
                 "var".to_string(),
                 "while".to_string(),
+                "print".to_string(),
             ],
         })
     }

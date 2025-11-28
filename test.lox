@@ -16,4 +16,6 @@ space    tabs				newlines
 
 end
 
+print "hello"
+
 // This is a comment
