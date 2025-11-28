@@ -1,4 +1,3 @@
-use core::fmt;
 use std::char;
 use std::fmt::Formatter;
 use std::fs::File;
@@ -53,7 +52,8 @@ enum TokenType {
     While,
     Keyword,
 
-    Whitespace,
+    // Error.
+    Error
 }
 
 fn report_error(line: usize, message: String) {
@@ -62,18 +62,18 @@ fn report_error(line: usize, message: String) {
 }
 
 #[derive(Debug)]
-enum RoxError {
+pub enum RoxError {
     InvalidToken,
     IOError(io::Error),
 }
 
-struct Token {
+pub struct Token {
     token_type: TokenType,
     lexeme: String,
     line: usize,
 }
 
-struct Lexer {
+pub struct Lexer {
     chars: Vec<char>,
     pointer: usize,
     current_line: usize,
@@ -85,6 +85,8 @@ impl Iterator for Lexer {
     fn next(&mut self) -> Option<Token> {
         let mut next_token: Option<Token> = Option::None;
 
+        // A loop here makes it so that I don't have to return the next_token in every single
+        // arm. I can 'continue' in certain arms like whitespaces.
         loop {
             match self.chars.get(self.pointer) {
                 Some(c) => {
@@ -241,12 +243,31 @@ impl Iterator for Lexer {
                             }
                         }
                         '/' => {
-                            next_token = Some(Token {
-                                token_type: TokenType::Slash,
-                                lexeme: lexeme,
-                                line: line,
-                            });
-                            self.pointer += 1;
+                            if self.peek_one_char() == '/' {
+                                let mut current_char: Option<&char> = self.chars.get(self.pointer);
+                                loop {
+                                    match current_char {
+                                        Some(c) => {
+                                            if c == &'\n' {
+                                                break;
+                                            }
+                                            self.pointer += 1;
+                                            current_char = self.chars.get(self.pointer);
+                                        },
+                                        None => {
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            else {
+                                next_token = Some(Token {
+                                    token_type: TokenType::Slash,
+                                    lexeme: lexeme,
+                                    line: line,
+                                });
+                                self.pointer += 1;
+                            }
                         }
                         '"' => {
                             self.pointer += 1;
@@ -273,24 +294,17 @@ impl Iterator for Lexer {
                             });
                             self.pointer += 1;
                         }
-                        ' ' | '\t' => {
-                            self.pointer += 1;
-                            //  We generate a token here because the iterator otherwise returns
-                            //  None, which ends the iteration.
-                            next_token = Some(Token {
-                                token_type: TokenType::Whitespace,
-                                lexeme: lexeme,
-                                line: line,
-                            });
-                        }
-                        '\n' => {
-                            self.current_line += 1;
-                            self.pointer += 1;
-                            next_token = Some(Token {
-                                token_type: TokenType::Whitespace,
-                                lexeme: lexeme,
-                                line: line,
-                            });
+                        ' ' | '\t' | '\n' => {
+                            while let Some(c) = self.chars.get(self.pointer) {
+                                if c == &'\n' {
+                                    self.current_line += 1;
+                                }
+                                else if c != &' ' && c != &'\t' {
+                                    break;
+                                }
+                                self.pointer += 1;
+                            }
+                            continue;
                         }
                         other => {
                             // At this point, its either an identifier, a digit or a keyword
@@ -341,13 +355,63 @@ impl Iterator for Lexer {
 
 impl std::fmt::Display for Token {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
-        println!("Token: {}, Line: {}", self.lexeme, self.line);
+        let ttype: &str;
+        match self.token_type {
+            // Single-character tokens.
+            TokenType::LeftParen => ttype = "LeftParen",
+            TokenType::RightParen => ttype = "RightParen",
+            TokenType::LeftBrace => ttype = "LeftBrace",
+            TokenType::RightBrace => ttype = "RightBrace",
+            TokenType::Comma => ttype = "Comma",
+            TokenType::Dot => ttype = "Dot",
+            TokenType::Minus => ttype = "Minus",
+            TokenType::Plus => ttype = "Plus",
+            TokenType::Semicolon => ttype = "Semicolon",
+            TokenType::Slash => ttype = "Slash",
+            TokenType::Star => ttype = "Star",
+
+            TokenType::Bang => ttype = "Bang",
+            TokenType::BangEqual => ttype = "BangEqual",
+            TokenType::Equal => ttype = "Equal",
+            TokenType::EqualEqual => ttype = "EqualEqual",
+            TokenType::Greater => ttype = "Greater",
+            TokenType::GreaterEqual => ttype = "GreaterEqual",
+            TokenType::Less => ttype = "Less",
+            TokenType::LessEqual => ttype = "LessEqual",
+
+            TokenType::Identifier => ttype = "Identifier",
+            TokenType::String => ttype = "String",
+            TokenType::Number => ttype = "Number",
+
+            // Keywords.
+            TokenType::And => ttype = "And",
+            TokenType::Class => ttype = "Class",
+            TokenType::Else => ttype = "Else",
+            TokenType::False => ttype = "False",
+            TokenType::Fun => ttype = "Fun",
+            TokenType::For => ttype = "For",
+            TokenType::If => ttype = "If",
+            TokenType::Nil => ttype = "Nil",
+            TokenType::Or => ttype = "Or",
+            TokenType::Print => ttype = "Print",
+            TokenType::Return => ttype = "Return",
+            TokenType::Super => ttype = "Super",
+            TokenType::This => ttype = "This",
+            TokenType::True => ttype = "True",
+            TokenType::Var => ttype = "Var",
+            TokenType::While => ttype = "While",
+            TokenType::Keyword => ttype = "Keyword",
+
+            // Error.
+            TokenType::Error => ttype = "Error",
+        }
+        println!("Type: {} | Line: {} | Lexeme: {}", ttype, self.line, self.lexeme);
         Ok(())
     }
 }
 
 impl Lexer {
-    fn new(source_file_path: String) -> Result<Lexer, io::Error> {
+    pub fn new(source_file_path: String) -> Result<Lexer, io::Error> {
         let mut file = File::open(source_file_path)?;
         let mut source_buffer: String = String::new();
         file.read_to_string(&mut source_buffer)?;
@@ -383,25 +447,5 @@ impl Lexer {
         // Peeks the next char.
         // TODO: self.chars[p] can go out of bounds and panic. Handle cleanly.
         return self.chars[self.pointer + 1];
-    }
-}
-
-fn tokenize(source_file_path: String) -> Result<Vec<Token>, RoxError> {
-    let lexer = Lexer::new(source_file_path).map_err(RoxError::IOError)?;
-    let mut tokens: Vec<Token> = Vec::new();
-
-    for token in lexer.into_iter() {
-        tokens.push(token);
-    }
-    return Ok(tokens);
-}
-
-pub fn print_tokens(source_file_path: String) {
-    let tokens = tokenize(source_file_path).unwrap();
-    // println!("TOKEN LEN: {}", tokens.len());
-    for token in tokens {
-        if token.lexeme != ' '.to_string() && token.lexeme != '\n'.to_string() {
-            println!("{}", token);
-        }
     }
 }
