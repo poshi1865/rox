@@ -244,20 +244,11 @@ impl Iterator for Lexer {
                         }
                         '/' => {
                             if self.peek_one_char() == '/' {
-                                let mut current_char: Option<&char> = self.chars.get(self.pointer);
-                                loop {
-                                    match current_char {
-                                        Some(c) => {
-                                            if c == &'\n' {
-                                                break;
-                                            }
-                                            self.pointer += 1;
-                                            current_char = self.chars.get(self.pointer);
-                                        },
-                                        None => {
-                                            break;
-                                        }
+                                while let Some(current_char) = self.chars.get(self.pointer) {
+                                    if current_char == &'\n' {
+                                        break;
                                     }
+                                    self.pointer += 1;
                                 }
                             }
                             else {
