@@ -54,7 +54,7 @@ pub enum TokenType {
     Keyword,
 
     // Error.
-    Error
+    Error,
 }
 
 fn report_error(line: usize, message: String) {
@@ -251,8 +251,7 @@ impl Iterator for Lexer {
                                     }
                                     self.pointer += 1;
                                 }
-                            }
-                            else {
+                            } else {
                                 next_token = Some(Token {
                                     token_type: TokenType::Slash,
                                     lexeme: lexeme,
@@ -290,8 +289,7 @@ impl Iterator for Lexer {
                             while let Some(c) = self.chars.get(self.pointer) {
                                 if c == &'\n' {
                                     self.current_line += 1;
-                                }
-                                else if c != &' ' && c != &'\t' {
+                                } else if c != &' ' && c != &'\t' {
                                     break;
                                 }
                                 self.pointer += 1;
@@ -397,7 +395,10 @@ impl std::fmt::Display for Token {
             // Error.
             TokenType::Error => ttype = "Error",
         }
-        println!("Type: {} | Line: {} | Lexeme: {}", ttype, self.line, self.lexeme);
+        println!(
+            "Type: {} | Line: {} | Lexeme: {}",
+            ttype, self.line, self.lexeme
+        );
         Ok(())
     }
 }
