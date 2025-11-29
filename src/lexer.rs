@@ -4,7 +4,8 @@ use std::fs::File;
 use std::io::{self, Read};
 
 #[allow(dead_code)]
-enum TokenType {
+#[derive(PartialEq)]
+pub enum TokenType {
     // Single-character tokens.
     LeftParen,
     RightParen,
@@ -68,8 +69,8 @@ pub enum RoxError {
 }
 
 pub struct Token {
-    token_type: TokenType,
-    lexeme: String,
+    pub token_type: TokenType,
+    pub lexeme: String,
     line: usize,
 }
 
